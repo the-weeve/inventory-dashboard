@@ -1,7 +1,7 @@
 SKU,ProductName,OnHand,ReorderThreshold,Catergory,On Order,Vendor
 AVS-4800,Airwave 4800 Mask (Box of 10),2,3,Accessories ,0,Airgas
 AVS-SL,Soft Landing Towels (75 count),25,5,Accessories ,0,Soft Landing
-DEMO-AVS-SCS-GD,Grey - Dual Inlet (Demo),0,,Demo Whisper,0,Kingsom
+DEMO-AVS-SCS-GD,Grey - Dual Inlet (Demo),50,,Demo Whisper,0,Kingsom
 DEMO-AVS-SCS-GDV,Grey - Dual Inlet - Vented (Demo),0,,Demo Whisper,0,Kingsom
 DEMO-AVS-SCS-GS,Grey - Single Inlet (Demo),0,,Demo Whisper,0,Kingsom
 DEMO-AVS-SCS-GSV,Grey - Single Inlet - Vented (Demo),0,,Demo Whisper,0,Kingsom
