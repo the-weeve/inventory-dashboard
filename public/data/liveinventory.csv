@@ -1,0 +1,81 @@
+SKU,ProductName,OnHand,ReorderThreshold,Catergory,On Order,Vendor
+AVS-4800,Airwave 4800 Mask (Box of 10),2,3,Accessories ,0,Airgas
+AVS-SL,Soft Landing Towels (75 count),25,5,Accessories ,0,Soft Landing
+DEMO-AVS-SCS-GD,Grey - Dual Inlet (Demo),0,,Demo Whisper,0,Kingsom
+DEMO-AVS-SCS-GDV,Grey - Dual Inlet - Vented (Demo),0,,Demo Whisper,0,Kingsom
+DEMO-AVS-SCS-GS,Grey - Single Inlet (Demo),0,,Demo Whisper,0,Kingsom
+DEMO-AVS-SCS-GSV,Grey - Single Inlet - Vented (Demo),0,,Demo Whisper,0,Kingsom
+DEMO-AVS-SCS-WD,White - Dual Inlet (Demo),0,,Demo Whisper,0,Kingsom
+DEMO-AVS-SCS-WDV,White - Dual Inlet - Vented (Demo),0,,Demo Whisper,0,Kingsom
+DEMO-AVS-SCS-WS,White - Single Inlet (Demo),0,,Demo Whisper,0,Kingsom
+DEMO-AVS-SCS-WSV,White - Single Inlet - Vented (Demo),0,,Demo Whisper,0,Kingsom
+HVAC-20x25x1,Warehouse Furnace Filter,1,,Office Supplies,0,ULINE
+KLX,Kleenex,36,2,Office Supplies,0,Amazon
+TP,Toilet Paper,12,2,Office Supplies,0,Amazon
+PT,Paper Towels,13,2,Office Supplies,0,Amazon
+APC-JUG,Plastic Jug for Carbon,0,15,Packaging,108,The Cary Company
+APS-FOAM,TOTW Foam Pad,0,5,Packaging,0,ULINE
+AVS-GAL,Gallon Bottle (Blank),8,60,Packaging,0,Cincinatti Cont.
+16x16x16  Box ,AVS-BOX,10,5,Packaging,0,ULINE
+AVS-TRIG,Trigger Sprayer,20,50,Packaging,0,Cincinatti Cont.
+10x8x6 Box,APC-BOX,25,5,Packaging,0,ULINE
+16x16x10 Box,WMAP-BOX,25,5,Packaging,0,ULINE
+24x18x18 Box,TOTW-BOX,5,5,Packaging,0,ULINE
+AVS-I16-BLANK,16 oz. Bottle (Blank),50,50,Packaging,0,Cincinatti Cont.
+AVS-I16-PRINTED,16 oz. Bottle (Printed),300,150,Packaging,0,Cincinatti Cont.
+AVS-IB,Impress Spray (55 Gallon Barrel),0,1,Printer Products,0,Athea Labs
+AVS-I16-24,16 OZ. Impress Spray  (Case of 24),2,5,Printer Products,0,Aerovex
+AVS-I16-12,16 OZ. Impress Spray - Case of 12,4,5,Printer Products,0,Aerovex
+DC-C12-A,Dust Controllers (Case of 12 - Angle),5,10,Printer Products,0,Pepin
+DC-C24-A,Dust Controllers (Case of 24 - Angle),18,10,Printer Products,0,Pepin
+AVS-AH,Angle Handle,20,10,Printer Products,0,Pepin
+AVS-SH,Stem Handle,20,10,Printer Products,0,Pepin
+DC-C24,Dust Controllers (Case of 24),20,15,Printer Products,0,Pepin
+DC-C12,Dust Controllers (Case of 12),35,10,Printer Products,0,Pepin
+BC,Bancheez Cloth  (Pack of 50),40,15,Printer Products,0,Mercantile
+AVS-FE-RF,WMAP Filter,0,25,Replacement Filters,100,ETOP
+APC-1,Activated Carbon,15,10,Replacement Filters,0,Aerovex
+SF-5,Sunflower Filter Pack,15,10,Replacement Filters,0,BAU
+AVS-MED-RF,Med Spa Replacement Filter,25,10,Replacement Filters,0,Kingsom
+WDF-1,Washable Dust Filter (Packaged),32,10,Replacement Filters,0,Foam Molders
+WS4,Whisper Filter Set,95,45,Replacement Filters,0,Kingsom
+TOTW,The One That Works,-1,6,Room Air Purifiers,6,Aerovex
+WMAP-W,Small Wall Mounted Air Purifier (White),-19,25,Room Air Purifiers,75,ETOP
+WMAP-L,Large Wall Mount Air Purifier,1,5,Room Air Purifiers,12,ETOP
+PCO ,The One That Works (PCO) ,2,6,Room Air Purifiers,6,Aerovex
+WMAP-G,Small Wall Mounted Air Purifier (Grey),4,25,Room Air Purifiers,75,ETOP
+APS-CARBON-BARREL,Bulk Carbon Barrel,2,1,TOTW Parts,0,Hydrosil
+PCO-CELL,PCO Cell,2,4,TOTW Parts,6,ActivTek
+PCO-LEAD,PCO Molex Lead (Assembled),3,5,TOTW Parts,0,TBD
+PCO-MOLEX-F,Molex Connector (Female),3,10,TOTW Parts,0,TBD
+PCO-MOLEX-M,Molex Connector (Male),3,10,TOTW Parts,0,TBD
+APS-CART,TOTW Cart,4,5,Accessories ,0,Aerovex
+APS-CORD,TOTW Power Cord,10,10,TOTW Parts,0,McMaster Carr
+APS-CORD-PCO,PCO Power Cord,10,10,TOTW Parts,0,McMaster Carr
+APS-SWITCH,TOTW Power Switch,10,5,TOTW Parts,0,TBD
+APS-TOP,TOTW Top Assembly,18,5,TOTW Parts,0,Zier Plastics
+APS-DECAL,TOTW Decal Set,23,10,TOTW Parts,0,DuraTech Industries
+APS -FUNNEL,TOTW Funnel,24,5,TOTW Parts,0,Zier Plastics
+PCO-SWITCH,PCO Toggle Switch (Red),26,10,TOTW Parts,0,DigiKey
+APS-BASE,TOTW Base,30,5,TOTW Parts,0,Zier Plastics
+APS-GRILL,TOTW Fan Grill,34,5,TOTW Parts,0,Zier Plastics
+APS-ROD,TOTW Threaded Rod,95,30,TOTW Parts,0,Rolled Threads Unlimited 
+APS-CHANNEL,TOTW Plastic Channel,53,30,TOTW Parts,0,TBD
+APS-MOTOR,TOTW Motor,178,30,TOTW Parts,0,McMillain Electric
+APS-BLADE,TOTW Fan Blade,200,30,TOTW Parts,0,TBD
+PCO-BRACKET,PCO Angle Bracket,8,4,TOTW Parts,0,Menards
+APS-WHEEL,TOTW Caster Wheel Set,50,20,TOTW Parts,0,TBD
+APS-PIN,TOTW Metal Pin,100,25,TOTW Parts,0,McMaster Carr
+APS-INNER,TOTW Inner Metal Sheet,100,25,TOTW Parts,0,McKey Perforation
+APS-OUTER,TOTW Outer Metal Sheet,100,25,TOTW Parts,0,McKey Perforation
+AVS-SCS-GDV,Whisper Grey - Dual Inlet - Vented,18,15,Vented Whisper,0,Kingsom
+AVS-SCS-WSV,Whisper White - Single Inlet - Vented,19,15,Vented Whisper,0,Kingsom
+AVS-SCS-GSV,Whisper Grey - Single Inlet - Vented,20,15,Vented Whisper,0,Kingsom
+AVS-SCS-WDV,Whisper White - Dual Inlet - Vented,18,15,Vented Whisper,0,Kingsom
+AVS-SCS-GS,Whisper Grey - Single Inlet,9,15,Recirculating Whisper,0,Kingsom
+AVS-SCS-WS,Whisper White - Single Inlet,15,15,Recirculating Whisper,0,Kingsom
+AVS-SCS-GD,Whisper Grey - Dual Inlet,24,15,Recirculating Whisper,0,Kingsom
+AVS-SCS-WD,Whisper White - Dual Inlet,24,15,Recirculating Whisper,0,Kingsom
+AVS-PCB,Replacement PCB Board for Whisper,5,2,Whisper Parts,0,Kingsom
+AVS-DUCT,Exhaust Duct for Whisper,40,20,Whisper Parts,0,Kingsom
+AVS-HOSE,Replacement Hose and Hood for Whisper,50,10,Whisper Parts,0,Kingsom
