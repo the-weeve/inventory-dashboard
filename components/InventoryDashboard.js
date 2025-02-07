@@ -17,8 +17,11 @@ const InventoryDashboard = () => {
       try {
         const SHEET_ID = '1bCNMgfDBJaAco8-HEg9TY5oDnT4f1ftywFqkQXkpoBE';
         const response = await fetch(
-          `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json`
-        );
+          `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json`, {
+            headers: {
+              'Access-Control-Allow-Origin': '*'
+            }
+          });
         const text = await response.text();
         const jsonData = JSON.parse(text.substring(47).slice(0, -2));
         const headers = jsonData.table.cols.map(col => col.label);
