@@ -55,16 +55,26 @@ const InventoryDashboard = () => {
           }
         });
         
+        const mainCategories = [
+          'Recirculating Whisper',
+          'Vented Whisper',
+          'Room Air Purifiers',
+          'Replacement Filters',
+          'Printer Products'
+        ];
+        
         const overviewData = {
           totalProducts: data.length,
           totalStock: data.reduce((sum, item) => sum + item.OnHand, 0),
           totalOnOrder: data.reduce((sum, item) => sum + (item['On Order'] || 0), 0),
           lowStock: data.filter(item => item.OnHand <= item.ReorderThreshold).length,
           categories: Object.keys(sortedGrouped).length,
-          categoryBreakdown: Object.entries(sortedGrouped).map(([name, items]) => ({
-            name,
-            value: items.reduce((sum, item) => sum + item.OnHand, 0)
-          }))
+          categoryBreakdown: Object.entries(sortedGrouped)
+            .filter(([name]) => mainCategories.includes(name))
+            .map(([name, items]) => ({
+              name,
+              value: items.reduce((sum, item) => sum + item.OnHand, 0)
+            }))
         };
 
         setInventoryData(sortedGrouped);
