@@ -17,21 +17,15 @@ const InventoryDashboard = () => {
       try {
         const SHEET_ID = '1bCNMgfDBJaAco8-HEg9TY5oDnT4f1ftywFqkQXkpoBE';
         const response = await fetch(
-          `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json`, {
-            headers: {
-              'Access-Control-Allow-Origin': '*'
-            }
-          });
-        const text = await response.text();
-        const jsonData = JSON.parse(text.substring(47).slice(0, -2));
-        const headers = jsonData.table.cols.map(col => col.label);
-        const data = jsonData.table.rows.map(row => {
-          const item = {};
-          row.c.forEach((cell, i) => {
-            item[headers[i]] = cell ? cell.v : null;
-          });
-          return item;
+          `https://docs.google.com/spreadsheets/d/${SHEET_ID}/export?format=csv`
+        );
+        const csvText = await response.text();
+        const result = Papa.parse(csvText, {
+          header: true,
+          dynamicTyping: true,
+          skipEmptyLines: true
         });
+        const data = result.data;
 
         setAllProducts(data);
 
