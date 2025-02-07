@@ -128,26 +128,27 @@ const InventoryDashboard = () => {
         </div>
 
         <div className="bg-gray-800 border border-gray-700 rounded-xl p-6">
-          <h3 className="text-lg font-semibold text-white mb-4">Distribution</h3>
+          <h3 className="text-lg font-semibold text-white mb-4">Stock Level Heatmap</h3>
           <div className="h-64">
             <ResponsiveContainer>
-              <PieChart>
-                <Pie
-                  data={overview.categoryBreakdown}
+              <BarChart data={overview.categoryBreakdown} layout="vertical">
+                <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
+                <XAxis type="number" tick={{ fill: '#9CA3AF' }} />
+                <YAxis dataKey="name" type="category" tick={{ fill: '#9CA3AF' }} width={150} />
+                <Tooltip />
+                <Bar
                   dataKey="value"
-                  nameKey="name"
-                  cx="50%"
-                  cy="50%"
-                  outerRadius={80}
-                  fill="#8884d8"
-                  label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+                  fill="#3b82f6"
+                  background={{ fill: '#1f2937' }}
                 >
                   {overview.categoryBreakdown.map((entry, index) => (
-                    <Cell key={index} fill={['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6'][index % 5]} />
+                    <Cell
+                      key={`cell-${index}`}
+                      fill={entry.value > 100 ? '#22c55e' : entry.value > 50 ? '#f59e0b' : '#ef4444'}
+                    />
                   ))}
-                </Pie>
-                <Tooltip />
-              </PieChart>
+                </Bar>
+              </BarChart>
             </ResponsiveContainer>
           </div>
         </div>
