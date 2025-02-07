@@ -241,7 +241,7 @@ const InventoryDashboard = () => {
               </select>
             </div>
             
-            <div className="flex gap-2 overflow-x-auto pb-2">
+            <div className="flex flex-wrap gap-2">
               <button
                 onClick={() => setSelectedCategory(null)}
                 className={`px-5 py-2.5 rounded-lg text-sm font-medium transition-all ${
