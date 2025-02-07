@@ -173,7 +173,7 @@ const InventoryDashboard = () => {
           <h3 className="font-medium text-white text-lg truncate mb-1">{item.ProductName}</h3>
           <p className="text-gray-400">SKU: {item.SKU}</p>
         </div>
-        <div className={`px-2 py-0.5 rounded-full text-xs font-medium ${
+        <div className={`w-24 text-center px-3 py-1 rounded-full text-xs font-medium ${
           item.OnHand <= item.ReorderThreshold ? 'bg-red-900/50 text-red-300 border border-red-700' :
           'bg-emerald-900/50 text-emerald-300 border border-emerald-700'
         }`}>
