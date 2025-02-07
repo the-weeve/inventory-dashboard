@@ -219,7 +219,7 @@ const InventoryDashboard = () => {
           <div className="max-w-7xl mx-auto">
             <h1 className="text-3xl font-bold text-white mb-6">Live Inventory</h1>
             
-            <div className="flex gap-4 mb-4">
+            <div className="flex mb-4">
               <div className="relative flex-1">
                 <input
                   type="text"
@@ -229,16 +229,6 @@ const InventoryDashboard = () => {
                   className="w-full pl-10 pr-4 py-2 bg-gray-800 text-white placeholder-gray-400 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none border border-gray-700"
                 />
               </div>
-              
-              <select
-                value={sortBy}
-                onChange={(e) => setSortBy(e.target.value)}
-                className="px-4 py-2 bg-gray-800 text-white rounded-lg border border-gray-700 focus:ring-2 focus:ring-blue-500 outline-none"
-              >
-                <option value="name">Sort by Name</option>
-                <option value="stock">Sort by Stock Level</option>
-                <option value="sku">Sort by SKU</option>
-              </select>
             </div>
             
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
