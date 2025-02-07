@@ -71,10 +71,16 @@ const InventoryDashboard = () => {
           categories: Object.keys(sortedGrouped).length,
           categoryBreakdown: Object.entries(sortedGrouped)
             .filter(([name]) => mainCategories.includes(name))
-            .map(([name, items]) => ({
-              name,
-              value: items.reduce((sum, item) => sum + item.OnHand, 0)
-            }))
+            .map(([name, items]) => {
+              const totalStock = items.reduce((sum, item) => sum + item.OnHand, 0);
+              const belowThreshold = items.filter(item => item.OnHand <= item.ReorderThreshold).length;
+              const velocity = ((items.length - belowThreshold) / items.length) * 100;
+              return {
+                name,
+                value: totalStock,
+                velocity: velocity
+              };
+            })
         };
 
         setInventoryData(sortedGrouped);
