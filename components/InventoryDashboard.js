@@ -1,8 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
-import { AlertCircle, Search } from 'lucide-react';
-import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
-import { Alert, AlertDescription } from '@/components/ui/alert';
+import Papa from 'papaparse';
 
 const InventoryDashboard = () => {
   const [inventoryData, setInventoryData] = useState({});
@@ -77,7 +75,6 @@ const InventoryDashboard = () => {
     };
 
     fetchData();
-    // Refresh data every 5 minutes
     const interval = setInterval(fetchData, 300000);
     return () => clearInterval(interval);
   }, []);
@@ -85,135 +82,116 @@ const InventoryDashboard = () => {
   const Overview = () => (
     <div className="grid gap-6">
       {overview.lowStock > 0 && (
-        <Alert className="bg-red-900/50 border-red-700">
-          <AlertCircle className="h-4 w-4" />
-          <AlertDescription>
+        <div className="bg-red-900/50 border border-red-700 p-4 rounded-lg">
+          <p className="text-red-300">
             {overview.lowStock} items are below reorder threshold
-          </AlertDescription>
-        </Alert>
+          </p>
+        </div>
       )}
       
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        <Card className="bg-gray-800 border-gray-700">
-          <CardHeader>
-            <CardTitle className="text-sm text-gray-400">Low Stock Items</CardTitle>
-            <div className="text-3xl font-bold text-red-400">{overview.lowStock}</div>
-          </CardHeader>
-        </Card>
+        <div className="bg-gray-800 border border-gray-700 rounded-xl p-6">
+          <p className="text-sm text-gray-400">Low Stock Items</p>
+          <p className="text-3xl font-bold text-red-400">{overview.lowStock}</p>
+        </div>
 
-        <Card className="bg-gray-800 border-gray-700">
-          <CardHeader>
-            <CardTitle className="text-sm text-gray-400">Units On Order</CardTitle>
-            <div className="text-3xl font-bold text-blue-400">{overview.totalOnOrder}</div>
-          </CardHeader>
-        </Card>
+        <div className="bg-gray-800 border border-gray-700 rounded-xl p-6">
+          <p className="text-sm text-gray-400">Units On Order</p>
+          <p className="text-3xl font-bold text-blue-400">{overview.totalOnOrder}</p>
+        </div>
 
-        <Card className="bg-gray-800 border-gray-700">
-          <CardHeader>
-            <CardTitle className="text-sm text-gray-400">Total Stock</CardTitle>
-            <div className="text-3xl font-bold text-white">{overview.totalStock}</div>
-          </CardHeader>
-        </Card>
+        <div className="bg-gray-800 border border-gray-700 rounded-xl p-6">
+          <p className="text-sm text-gray-400">Total Stock</p>
+          <p className="text-3xl font-bold text-white">{overview.totalStock}</p>
+        </div>
 
-        <Card className="bg-gray-800 border-gray-700">
-          <CardHeader>
-            <CardTitle className="text-sm text-gray-400">Total Products</CardTitle>
-            <div className="text-3xl font-bold text-white">{overview.totalProducts}</div>
-          </CardHeader>
-        </Card>
+        <div className="bg-gray-800 border border-gray-700 rounded-xl p-6">
+          <p className="text-sm text-gray-400">Total Products</p>
+          <p className="text-3xl font-bold text-white">{overview.totalProducts}</p>
+        </div>
       </div>
 
       <div className="grid md:grid-cols-2 gap-6">
-        <Card className="bg-gray-800 border-gray-700">
-          <CardHeader>
-            <CardTitle className="text-lg font-semibold text-white">Stock by Category</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="h-64">
-              <ResponsiveContainer>
-                <BarChart data={overview.categoryBreakdown}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
-                  <XAxis dataKey="name" tick={{ fill: '#9CA3AF' }} angle={-45} textAnchor="end" height={100} />
-                  <YAxis tick={{ fill: '#9CA3AF' }} />
-                  <Tooltip />
-                  <Bar dataKey="value" fill="#3b82f6" />
-                </BarChart>
-              </ResponsiveContainer>
-            </div>
-          </CardContent>
-        </Card>
+        <div className="bg-gray-800 border border-gray-700 rounded-xl p-6">
+          <h3 className="text-lg font-semibold text-white mb-4">Stock by Category</h3>
+          <div className="h-64">
+            <ResponsiveContainer>
+              <BarChart data={overview.categoryBreakdown}>
+                <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
+                <XAxis dataKey="name" tick={{ fill: '#9CA3AF' }} angle={-45} textAnchor="end" height={100} />
+                <YAxis tick={{ fill: '#9CA3AF' }} />
+                <Tooltip />
+                <Bar dataKey="value" fill="#3b82f6" />
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+        </div>
 
-        <Card className="bg-gray-800 border-gray-700">
-          <CardHeader>
-            <CardTitle className="text-lg font-semibold text-white">Distribution</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="h-64">
-              <ResponsiveContainer>
-                <PieChart>
-                  <Pie
-                    data={overview.categoryBreakdown}
-                    dataKey="value"
-                    nameKey="name"
-                    cx="50%"
-                    cy="50%"
-                    outerRadius={80}
-                    fill="#8884d8"
-                    label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
-                  >
-                    {overview.categoryBreakdown.map((entry, index) => (
-                      <Cell key={index} fill={['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6'][index % 5]} />
-                    ))}
-                  </Pie>
-                  <Tooltip />
-                </PieChart>
-              </ResponsiveContainer>
-            </div>
-          </CardContent>
-        </Card>
+        <div className="bg-gray-800 border border-gray-700 rounded-xl p-6">
+          <h3 className="text-lg font-semibold text-white mb-4">Distribution</h3>
+          <div className="h-64">
+            <ResponsiveContainer>
+              <PieChart>
+                <Pie
+                  data={overview.categoryBreakdown}
+                  dataKey="value"
+                  nameKey="name"
+                  cx="50%"
+                  cy="50%"
+                  outerRadius={80}
+                  fill="#8884d8"
+                  label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+                >
+                  {overview.categoryBreakdown.map((entry, index) => (
+                    <Cell key={index} fill={['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6'][index % 5]} />
+                  ))}
+                </Pie>
+                <Tooltip />
+              </PieChart>
+            </ResponsiveContainer>
+          </div>
+        </div>
       </div>
     </div>
   );
 
   const ProductCard = ({ item }) => (
-    <Card className="bg-gray-800 border-gray-700">
-      <CardContent className="pt-6">
-        <div className="flex items-start justify-between gap-4 mb-4">
-          <div className="min-w-0">
-            <h3 className="font-medium text-white text-lg truncate mb-1">{item.ProductName}</h3>
-            <p className="text-gray-400">SKU: {item.SKU}</p>
-          </div>
-          <div className={`px-3 py-1 rounded-full text-sm font-medium ${
-            item.OnHand <= item.ReorderThreshold ? 'bg-red-900/50 text-red-300 border border-red-700' :
-            'bg-emerald-900/50 text-emerald-300 border border-emerald-700'
-          }`}>
-            {item.OnHand <= item.ReorderThreshold ? 'Low Stock' : 'In Stock'}
-          </div>
+    <div className="bg-gray-800 border border-gray-700 rounded-xl p-6">
+      <div className="flex items-start justify-between gap-4 mb-4">
+        <div className="min-w-0">
+          <h3 className="font-medium text-white text-lg truncate mb-1">{item.ProductName}</h3>
+          <p className="text-gray-400">SKU: {item.SKU}</p>
         </div>
+        <div className={`px-3 py-1 rounded-full text-sm font-medium ${
+          item.OnHand <= item.ReorderThreshold ? 'bg-red-900/50 text-red-300 border border-red-700' :
+          'bg-emerald-900/50 text-emerald-300 border border-emerald-700'
+        }`}>
+          {item.OnHand <= item.ReorderThreshold ? 'Low Stock' : 'In Stock'}
+        </div>
+      </div>
 
-        <div className="grid grid-cols-2 gap-4">
-          <div className="bg-gray-700/50 p-4 rounded-lg border border-gray-600">
-            <p className="text-sm text-blue-300 font-medium mb-1">Current Stock</p>
-            <p className={`text-3xl font-bold ${
-              item.OnHand === 0 ? 'text-red-500' :
-              item.OnHand <= item.ReorderThreshold ? 'text-red-400' :
-              item.OnHand <= item.ReorderThreshold * 2 ? 'text-yellow-400' :
-              'text-green-400'
-            }`}>{item.OnHand}</p>
-            {item.Vendor && <p className="text-sm text-gray-400 mt-2">Vendor: {item.Vendor}</p>}
-          </div>
-          <div className="bg-gray-700/50 p-4 rounded-lg border border-gray-600">
-            <p className="text-sm text-gray-300 mb-1">Reorder At</p>
-            <p className="text-2xl font-medium text-gray-200">{item.ReorderThreshold}</p>
-            {item['On Order'] > 0 && (
-              <div className="bg-blue-900/50 px-3 py-1 rounded-full border border-blue-700 inline-block mt-2">
-                <p className="text-sm text-blue-300">+{item['On Order']} on order</p>
-              </div>
-            )}
-          </div>
+      <div className="grid grid-cols-2 gap-4">
+        <div className="bg-gray-700/50 p-4 rounded-lg border border-gray-600">
+          <p className="text-sm text-blue-300 font-medium mb-1">Current Stock</p>
+          <p className={`text-3xl font-bold ${
+            item.OnHand === 0 ? 'text-red-500' :
+            item.OnHand <= item.ReorderThreshold ? 'text-red-400' :
+            item.OnHand <= item.ReorderThreshold * 2 ? 'text-yellow-400' :
+            'text-green-400'
+          }`}>{item.OnHand}</p>
+          {item.Vendor && <p className="text-sm text-gray-400 mt-2">Vendor: {item.Vendor}</p>}
         </div>
-      </CardContent>
-    </Card>
+        <div className="bg-gray-700/50 p-4 rounded-lg border border-gray-600">
+          <p className="text-sm text-gray-300 mb-1">Reorder At</p>
+          <p className="text-2xl font-medium text-gray-200">{item.ReorderThreshold}</p>
+          {item['On Order'] > 0 && (
+            <div className="bg-blue-900/50 px-3 py-1 rounded-full border border-blue-700 inline-block mt-2">
+              <p className="text-sm text-blue-300">+{item['On Order']} on order</p>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
   );
 
   const getFilteredProducts = () => {
@@ -243,7 +221,6 @@ const InventoryDashboard = () => {
             
             <div className="flex gap-4 mb-4">
               <div className="relative flex-1">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5" />
                 <input
                   type="text"
                   placeholder="Search products..."
