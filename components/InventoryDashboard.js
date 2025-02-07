@@ -241,10 +241,10 @@ const InventoryDashboard = () => {
               </select>
             </div>
             
-            <div className="flex flex-wrap gap-2">
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
               <button
                 onClick={() => setSelectedCategory(null)}
-                className={`px-5 py-2.5 rounded-lg text-sm font-medium transition-all ${
+                className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-all ${
                   !selectedCategory ? 'bg-blue-600 text-white' : 'bg-gray-800 text-gray-300 hover:bg-gray-700 border border-gray-700'
                 }`}
               >
@@ -254,7 +254,7 @@ const InventoryDashboard = () => {
                 <button
                   key={category}
                   onClick={() => setSelectedCategory(category)}
-                  className={`px-5 py-2.5 rounded-lg text-sm font-medium transition-all ${
+                  className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-all ${
                     category === selectedCategory ? 'bg-blue-600 text-white' : 'bg-gray-800 text-gray-300 hover:bg-gray-700 border border-gray-700'
                   }`}
                 >
