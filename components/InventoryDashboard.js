@@ -1,7 +1,46 @@
 import React, { useState, useEffect } from 'react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
 import Papa from 'papaparse';
-import { Package, AlertCircle } from 'lucide-react';
+
+const ProductCard = ({ item }) => (
+  <div className="bg-gray-800 rounded-xl shadow-lg p-5 border border-gray-700">
+    <div className="flex items-start justify-between gap-4 mb-4">
+      <div className="min-w-0">
+        <h3 className="font-medium text-white text-lg truncate mb-1">
+          {item.ProductName}
+        </h3>
+        <p className="text-gray-400">SKU: {item.SKU}</p>
+      </div>
+      <div className={`px-3 py-1 rounded-full text-sm font-medium ${
+        item.OnHand === 0 ? 'bg-red-900/50 text-red-300 border border-red-700' :
+        item.OnHand <= item.ReorderThreshold ? 'bg-red-900/50 text-red-300 border border-red-700' :
+        'bg-emerald-900/50 text-emerald-300 border border-emerald-700'
+      }`}>
+        {item.OnHand === 0 ? 'Out of Stock' :
+         item.OnHand <= item.ReorderThreshold ? 'Low Stock' : 'In Stock'}
+      </div>
+    </div>
+
+    <div className="grid grid-cols-2 gap-8 mb-4">
+      <div className="bg-gray-700/50 p-4 rounded-lg border border-gray-600">
+        <p className="text-sm text-blue-300 font-medium mb-1">Current Stock</p>
+        <p className="text-3xl font-bold text-white">{item.OnHand}</p>
+        {item.Vendor && (
+          <p className="text-sm text-gray-400 mt-2">Vendor: {item.Vendor}</p>
+        )}
+      </div>
+      <div className="bg-gray-700/50 p-4 rounded-lg border border-gray-600">
+        <p className="text-sm text-gray-300 mb-1">Reorder At</p>
+        <p className="text-2xl font-medium text-gray-200 mb-2">{item.ReorderThreshold}</p>
+        {item['On Order'] > 0 && (
+          <div className="bg-blue-900/50 px-3 py-1 rounded-full border border-blue-700 inline-block">
+            <p className="text-sm text-blue-300">+{item['On Order']} on order</p>
+          </div>
+        )}
+      </div>
+    </div>
+  </div>
+);
 
 const InventoryDashboard = () => {
   const [inventoryData, setInventoryData] = useState({});
@@ -10,12 +49,16 @@ const InventoryDashboard = () => {
   const [overview, setOverview] = useState(null);
   const [allProducts, setAllProducts] = useState([]);
   const [showLowStock, setShowLowStock] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
     const fetchData = async () => {
       try {
+        setIsLoading(true);
         const response = await window.fs.readFile('liveinventory.csv');
         const csvText = new TextDecoder().decode(response);
+        
         const result = Papa.parse(csvText, {
           header: true,
           dynamicTyping: true,
@@ -25,51 +68,32 @@ const InventoryDashboard = () => {
         const data = result.data;
         setAllProducts(data);
 
-        const categoryOrder = [
-          'Recirculating Whisper',
-          'Whisper',
-          'Vented Whisper',
-          'Room Air Purifiers',
-          'Replacement Filters',
-          'Printer Products',
-          'Accessories ',
-          'TOTW Parts',
-          'Whisper Parts',
-          'Packaging',
-          'Office Supplies',
-          'Demo Whisper'
-        ];
-
         const grouped = data.reduce((acc, item) => {
-          const category = item.Catergory;
+          const category = item.Catergory || 'Uncategorized';
           if (!acc[category]) acc[category] = [];
           acc[category].push(item);
           return acc;
         }, {});
 
-        const sortedInventoryData = {};
-        categoryOrder.forEach(category => {
-          if (grouped[category]) {
-            sortedInventoryData[category] = grouped[category];
-          }
-        });
-        
         const overviewData = {
           totalProducts: data.length,
-          totalStock: data.reduce((sum, item) => sum + item.OnHand, 0),
+          totalStock: data.reduce((sum, item) => sum + (item.OnHand || 0), 0),
           totalOnOrder: data.reduce((sum, item) => sum + (item['On Order'] || 0), 0),
           lowStock: data.filter(item => item.OnHand <= item.ReorderThreshold).length,
           categories: Object.keys(grouped).length,
-          categoryBreakdown: Object.entries(sortedInventoryData).map(([name, items]) => ({
+          categoryBreakdown: Object.entries(grouped).map(([name, items]) => ({
             name,
-            value: items.reduce((sum, item) => sum + item.OnHand, 0)
+            value: items.reduce((sum, item) => sum + (item.OnHand || 0), 0)
           }))
         };
 
-        setInventoryData(sortedInventoryData);
+        setInventoryData(grouped);
         setOverview(overviewData);
+        setIsLoading(false);
       } catch (error) {
         console.error('Error loading inventory data:', error);
+        setError('Failed to load inventory data');
+        setIsLoading(false);
       }
     };
 
@@ -192,51 +216,21 @@ const InventoryDashboard = () => {
     </div>
   );
 
-  const ProductCard = ({ item }) => (
-    <div className="bg-gray-800 rounded-xl shadow-lg p-5 border border-gray-700">
-      <div className="flex items-start justify-between gap-4 mb-4">
-        <div className="min-w-0">
-          <h3 className="font-medium text-white text-lg truncate mb-1">
-            {item.ProductName}
-          </h3>
-          <p className="text-gray-400">SKU: {item.SKU}</p>
-        </div>
-        <div className={`px-3 py-1 rounded-full text-sm font-medium ${
-          item.OnHand === 0 ? 'bg-red-900/50 text-red-300 border border-red-700' :
-          item.OnHand <= item.ReorderThreshold ? 'bg-red-900/50 text-red-300 border border-red-700' :
-          'bg-emerald-900/50 text-emerald-300 border border-emerald-700'
-        }`}>
-          {item.OnHand === 0 ? 'Out of Stock' :
-           item.OnHand <= item.ReorderThreshold ? 'Low Stock' : 'In Stock'}
-        </div>
+  if (isLoading) {
+    return (
+      <div className="flex justify-center items-center h-screen bg-gray-900">
+        <div className="animate-pulse text-blue-400">Loading...</div>
       </div>
+    );
+  }
 
-      <div className="grid grid-cols-2 gap-8 mb-4">
-        <div className="bg-gray-700/50 p-4 rounded-lg border border-gray-600">
-          <p className="text-sm text-blue-300 font-medium mb-1">Current Stock</p>
-          <p className="text-3xl font-bold text-white">{item.OnHand}</p>
-          {item.Vendor && (
-            <p className="text-sm text-gray-400 mt-2">Vendor: {item.Vendor}</p>
-          )}
-        </div>
-        <div className="bg-gray-700/50 p-4 rounded-lg border border-gray-600">
-          <p className="text-sm text-gray-300 mb-1">Reorder At</p>
-          <p className="text-2xl font-medium text-gray-200 mb-2">{item.ReorderThreshold}</p>
-          {item['On Order'] > 0 && (
-            <div className="bg-blue-900/50 px-3 py-1 rounded-full border border-blue-700 inline-block">
-              <p className="text-sm text-blue-300">+{item['On Order']} on order</p>
-            </div>
-          )}
-        </div>
+  if (error) {
+    return (
+      <div className="flex justify-center items-center h-screen bg-gray-900">
+        <div className="text-red-400">{error}</div>
       </div>
-    </div>
-  );
-
-  if (!overview) return (
-    <div className="flex justify-center items-center h-screen bg-gray-900">
-      <div className="animate-pulse text-blue-400">Loading...</div>
-    </div>
-  );
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gray-900">
