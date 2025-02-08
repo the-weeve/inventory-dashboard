@@ -127,7 +127,7 @@ const InventoryDashboard = () => {
         </div>
       </div>
 
-      <div className="grid md:grid-cols-2 gap-6">
+      <div className="gap-6">
         <div className="bg-gray-800 border border-gray-700 rounded-xl p-6">
           <h3 className="text-lg font-semibold text-white mb-4">Stock by Category</h3>
           <div className="h-64">
