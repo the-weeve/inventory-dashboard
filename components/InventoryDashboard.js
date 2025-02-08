@@ -127,22 +127,6 @@ const InventoryDashboard = () => {
         </div>
       </div>
 
-      <div className="gap-6">
-        <div className="bg-gray-800 border border-gray-700 rounded-xl p-6">
-          <h3 className="text-lg font-semibold text-white mb-4">Stock by Category</h3>
-          <div className="h-64">
-            <ResponsiveContainer>
-              <BarChart data={overview.categoryBreakdown}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
-                <XAxis dataKey="name" tick={{ fill: '#9CA3AF' }} angle={-45} textAnchor="end" height={100} />
-                <YAxis tick={{ fill: '#9CA3AF' }} />
-                <Tooltip />
-                <Bar dataKey="value" fill="#3b82f6" />
-              </BarChart>
-            </ResponsiveContainer>
-          </div>
-        </div>
-
         <div className="bg-gray-800 border border-gray-700 rounded-xl p-6">
           <h3 className="text-lg font-semibold text-white mb-4">Stock Level Heatmap</h3>
           <div className="h-64">
