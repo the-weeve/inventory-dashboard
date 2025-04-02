@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, LineChart, Line, Legend } from 'recharts';
 import Papa from 'papaparse';
 
 const InventoryDashboard = () => {
@@ -11,6 +11,10 @@ const InventoryDashboard = () => {
   const [sortBy, setSortBy] = useState('name');
   const [lastUpdated, setLastUpdated] = useState(null);
   const [updateHistory, setUpdateHistory] = useState([]);
+  const [trendData, setTrendData] = useState({});
+  const [selectedTrendProduct, setSelectedTrendProduct] = useState(null);
+  const [selectedTrendCategory, setSelectedTrendCategory] = useState(null);
+  const [trendView, setTrendView] = useState('category'); // 'category' or 'product'
 
   useEffect(() => {
     const fetchData = async () => {
@@ -46,10 +50,67 @@ const InventoryDashboard = () => {
         // Current time for this update
         const currentTime = new Date();
         
+        // Load trend data from localStorage
+        let storedTrendData = JSON.parse(localStorage.getItem('trendData') || '{}');
+        
         // If this is the first load or the data has actually changed
         if (!previousChecksum || previousChecksum !== dataChecksum) {
           // Save new checksum
           localStorage.setItem('inventoryDataChecksum', dataChecksum);
+          
+          // Create snapshot of current inventory for trends
+          const categoryOrder = [
+            'Recirculating Whisper',
+            'Vented Whisper',
+            'Room Air Purifiers',
+            'Replacement Filters',
+            'Printer Products',
+            'TOTW Parts',
+            'Whisper Parts',
+            'Packaging',
+            'Office Supplies',
+            'Demo Whisper',
+            'Accessories'
+          ];
+          
+          // Generate category and product trend data
+          const newTrendPoint = {
+            timestamp: currentTime.getTime(),
+            date: currentTime.toISOString().split('T')[0] // YYYY-MM-DD format
+          };
+          
+          // Process category trends
+          const grouped = data.reduce((acc, item) => {
+            const category = item.Catergory;
+            if (!acc[category]) acc[category] = [];
+            acc[category].push(item);
+            return acc;
+          }, {});
+          
+          // Add category stock levels to trend point
+          Object.entries(grouped).forEach(([category, items]) => {
+            const totalStock = items.reduce((sum, item) => sum + (item.OnHand || 0), 0);
+            newTrendPoint[`${category}_stock`] = totalStock;
+          });
+          
+          // Process product trends for common items
+          data.forEach(item => {
+            if (item.SKU && item.OnHand !== undefined) {
+              newTrendPoint[`${item.SKU}_stock`] = item.OnHand;
+            }
+          });
+          
+          // Initialize or update trend data
+          if (!storedTrendData.points) {
+            storedTrendData = { points: [] };
+          }
+          
+          // Add new data point and keep at most 30 points (approx. 1 month if updated daily)
+          storedTrendData.points = [...storedTrendData.points, newTrendPoint].slice(-30);
+          
+          // Save updated trend data
+          localStorage.setItem('trendData', JSON.stringify(storedTrendData));
+          setTrendData(storedTrendData);
           
           // Add to update history
           const newHistoryEntry = {
@@ -75,7 +136,14 @@ const InventoryDashboard = () => {
           // Load history from localStorage
           const storedHistory = JSON.parse(localStorage.getItem('updateHistory') || '[]');
           setUpdateHistory(storedHistory);
+          
+          // Set trend data
+          setTrendData(storedTrendData);
+        } else {
+          // Still set trend data even if no changes
+          setTrendData(storedTrendData);
         }
+
         setAllProducts(data);
 
         const categoryOrder = [
@@ -161,6 +229,13 @@ const InventoryDashboard = () => {
     return date.toLocaleString(undefined, options);
   };
 
+  // Format short date for trend charts
+  const formatShortDate = (timestamp) => {
+    if (!timestamp) return '';
+    const date = new Date(timestamp);
+    return `${date.getMonth() + 1}/${date.getDate()}`;
+  };
+
   const UpdateTracker = () => (
     <div className="bg-gray-800 border border-gray-700 rounded-xl p-6 mb-6">
       <h3 className="text-lg font-semibold text-white mb-4">Update History</h3>
@@ -204,10 +279,182 @@ const InventoryDashboard = () => {
     </div>
   );
 
+  const TrendAnalysis = () => {
+    if (!trendData.points || trendData.points.length <= 1) {
+      return (
+        <div className="bg-gray-800 border border-gray-700 rounded-xl p-6 mb-6">
+          <h3 className="text-lg font-semibold text-white mb-4">Trend Analysis</h3>
+          <p className="text-gray-400">Not enough data points to display trends yet. Trends will appear as inventory changes are detected.</p>
+        </div>
+      );
+    }
+
+    const prepareChartData = () => {
+      if (trendView === 'category') {
+        // For category view
+        if (!selectedTrendCategory) return [];
+        
+        return trendData.points
+          .filter(point => point[`${selectedTrendCategory}_stock`] !== undefined)
+          .map(point => ({
+            date: formatShortDate(point.timestamp),
+            stock: point[`${selectedTrendCategory}_stock`]
+          }));
+      } else {
+        // For product view
+        if (!selectedTrendProduct) return [];
+        
+        return trendData.points
+          .filter(point => point[`${selectedTrendProduct}_stock`] !== undefined)
+          .map(point => ({
+            date: formatShortDate(point.timestamp),
+            stock: point[`${selectedTrendProduct}_stock`]
+          }));
+      }
+    };
+
+    const getAvailableCategories = () => {
+      if (!trendData.points || trendData.points.length === 0) return [];
+      
+      // Get the latest data point
+      const latestPoint = trendData.points[trendData.points.length - 1];
+      
+      // Find all keys that end with '_stock' and extract category names
+      return Object.keys(latestPoint)
+        .filter(key => key.endsWith('_stock'))
+        .map(key => key.replace('_stock', ''))
+        .filter(cat => Object.keys(inventoryData).includes(cat)); // Only include valid categories
+    };
+
+    const getAvailableProducts = () => {
+      if (!trendData.points || trendData.points.length === 0) return [];
+      
+      // Get the latest data point
+      const latestPoint = trendData.points[trendData.points.length - 1];
+      
+      // Find all keys that end with '_stock' and extract product SKUs
+      return Object.keys(latestPoint)
+        .filter(key => key.endsWith('_stock'))
+        .map(key => key.replace('_stock', ''))
+        .filter(sku => allProducts.some(product => product.SKU === sku)); // Only include valid products
+    };
+
+    const chartData = prepareChartData();
+    const categories = getAvailableCategories();
+    const products = getAvailableProducts();
+
+    return (
+      <div className="bg-gray-800 border border-gray-700 rounded-xl p-6 mb-6">
+        <h3 className="text-lg font-semibold text-white mb-4">Trend Analysis</h3>
+        
+        <div className="flex mb-4 space-x-4">
+          <button
+            onClick={() => setTrendView('category')}
+            className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-all ${
+              trendView === 'category' ? 'bg-blue-600 text-white' : 'bg-gray-700 text-gray-300 hover:bg-gray-600 border border-gray-600'
+            }`}
+          >
+            Category Trends
+          </button>
+          <button
+            onClick={() => setTrendView('product')}
+            className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-all ${
+              trendView === 'product' ? 'bg-blue-600 text-white' : 'bg-gray-700 text-gray-300 hover:bg-gray-600 border border-gray-600'
+            }`}
+          >
+            Product Trends
+          </button>
+        </div>
+        
+        <div className="mb-4">
+          {trendView === 'category' ? (
+            <select
+              value={selectedTrendCategory || ''}
+              onChange={(e) => setSelectedTrendCategory(e.target.value)}
+              className="w-full p-2 bg-gray-700 text-white border border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+            >
+              <option value="">Select a category</option>
+              {categories.map(category => (
+                <option key={category} value={category}>{category}</option>
+              ))}
+            </select>
+          ) : (
+            <select
+              value={selectedTrendProduct || ''}
+              onChange={(e) => setSelectedTrendProduct(e.target.value)}
+              className="w-full p-2 bg-gray-700 text-white border border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+            >
+              <option value="">Select a product</option>
+              {products.map(sku => {
+                const product = allProducts.find(p => p.SKU === sku);
+                return (
+                  <option key={sku} value={sku}>
+                    {product ? `${product.ProductName} (${sku})` : sku}
+                  </option>
+                );
+              })}
+            </select>
+          )}
+        </div>
+        
+        {chartData.length > 0 ? (
+          <div className="h-64">
+            <ResponsiveContainer>
+              <LineChart data={chartData}>
+                <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
+                <XAxis dataKey="date" tick={{ fill: '#9CA3AF' }} />
+                <YAxis tick={{ fill: '#9CA3AF' }} />
+                <Tooltip contentStyle={{ backgroundColor: '#1F2937', borderColor: '#4B5563' }} />
+                <Legend />
+                <Line 
+                  type="monotone" 
+                  dataKey="stock" 
+                  stroke="#3B82F6" 
+                  activeDot={{ r: 8 }} 
+                  name="Stock Level" 
+                />
+              </LineChart>
+            </ResponsiveContainer>
+          </div>
+        ) : (
+          <div className="text-gray-400 text-center py-10">
+            {trendView === 'category' 
+              ? 'Select a category to view stock level trends' 
+              : 'Select a product to view stock level trends'}
+          </div>
+        )}
+        
+        <div className="mt-4 text-sm text-gray-400">
+          {chartData.length > 0 ? (
+            <div>
+              <p className="mb-2">Trend Summary:</p>
+              <ul className="list-disc pl-5 space-y-1">
+                <li>
+                  Starting stock: {chartData[0]?.stock || 'N/A'}
+                </li>
+                <li>
+                  Current stock: {chartData[chartData.length - 1]?.stock || 'N/A'}
+                </li>
+                <li>
+                  Change: {chartData.length > 1 
+                    ? (chartData[chartData.length - 1].stock - chartData[0].stock) 
+                    : 'N/A'}
+                </li>
+              </ul>
+            </div>
+          ) : null}
+        </div>
+      </div>
+    );
+  };
+
   const Overview = () => (
     <div className="grid gap-6">
       {/* Update Tracker Component */}
       <UpdateTracker />
+      
+      {/* Trend Analysis Component */}
+      <TrendAnalysis />
       
       {overview.lowStock > 0 && (
         <div className="bg-red-900/50 border border-red-700 p-4 rounded-lg">
@@ -320,6 +567,20 @@ const InventoryDashboard = () => {
           )}
         </div>
       </div>
+      
+      {/* Add Product Trend Button */}
+      <div className="mt-4">
+        <button 
+          onClick={() => {
+            setSelectedTrendProduct(item.SKU);
+            setTrendView('product');
+            setSelectedCategory(null);
+          }}
+          className="w-full px-3 py-2 bg-blue-900/30 hover:bg-blue-800/50 text-blue-300 border border-blue-800 rounded-lg text-sm transition-colors"
+        >
+          View Stock Trend
+        </button>
+      </div>
     </div>
   );
 
@@ -380,7 +641,11 @@ const InventoryDashboard = () => {
               {Object.keys(inventoryData).map(category => (
                 <button
                   key={category}
-                  onClick={() => setSelectedCategory(category)}
+                  onClick={() => {
+                    setSelectedCategory(category);
+                    // Also set this category for trend analysis
+                    setSelectedTrendCategory(category);
+                  }}
                   className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-all ${
                     category === selectedCategory ? 'bg-blue-600 text-white' : 'bg-gray-800 text-gray-300 hover:bg-gray-700 border border-gray-700'
                   }`}
@@ -404,15 +669,38 @@ const InventoryDashboard = () => {
         ) : !selectedCategory ? (
           <Overview />
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-            {getFilteredProducts().map(item => (
-              <ProductCard key={item.SKU} item={item} />
-            ))}
-          </div>
-        )}
-      </div>
-    </div>
-  );
-};
-
-export default InventoryDashboard;
+          <div>
+            <h2 className="text-xl text-white mb-4">{selectedCategory} ({getFilteredProducts().length} products)</h2>
+            <div className="flex mb-6">
+              <div className="flex-1 bg-gray-800 border border-gray-700 rounded-xl p-6">
+                <h3 className="text-lg font-semibold text-white mb-4">{selectedCategory} Trend Analysis</h3>
+                {trendData.points && trendData.points.some(point => point[`${selectedCategory}_stock`] !== undefined) ? (
+                  <div className="h-64">
+                    <ResponsiveContainer>
+                      <LineChart data={trendData.points
+                        .filter(point => point[`${selectedCategory}_stock`] !== undefined)
+                        .map(point => ({
+                          date: formatShortDate(point.timestamp),
+                          stock: point[`${selectedCategory}_stock`]
+                        }))}>
+                        <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
+                        <XAxis dataKey="date" tick={{ fill: '#9CA3AF' }} />
+                        <YAxis tick={{ fill: '#9CA3AF' }} />
+                        <Tooltip contentStyle={{ backgroundColor: '#1F2937', borderColor: '#4B5563' }} />
+                        <Line 
+                          type="monotone" 
+                          dataKey="stock" 
+                          stroke="#3B82F6" 
+                          activeDot={{ r: 8 }}
+                          name="Stock Level"
+                        />
+                      </LineChart>
+                    </ResponsiveContainer>
+                  </div>
+                ) : (
+                  <div className="flex items-center justify-center h-64 text-gray-400">
+                    <p>Trend data will appear here after a few inventory updates</p>
+                  </div>
+                )}
+              </div>
+            </div>
