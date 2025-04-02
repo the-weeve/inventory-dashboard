@@ -9,11 +9,19 @@ const InventoryDashboard = () => {
   const [overview, setOverview] = useState(null);
   const [allProducts, setAllProducts] = useState([]);
   const [sortBy, setSortBy] = useState('name');
+  const [lastUpdated, setLastUpdated] = useState(null);
+  const [updateHistory, setUpdateHistory] = useState([]);
 
   useEffect(() => {
     const fetchData = async () => {
       try {
         const SHEET_ID = '1bCNMgfDBJaAco8-HEg9TY5oDnT4f1ftywFqkQXkpoBE';
+        
+        // Instead of using the API, we'll use local tracking
+        // This doesn't get the exact spreadsheet update time,
+        // but will track when we detect changes in the data
+        
+        // Fetch the actual CSV data
         const response = await fetch(
           `https://docs.google.com/spreadsheets/d/${SHEET_ID}/export?format=csv`
         );
@@ -25,6 +33,49 @@ const InventoryDashboard = () => {
         });
         const data = result.data;
 
+        // Generate a checksum of the data to detect changes
+        const dataChecksum = JSON.stringify(data.map(item => ({ 
+          sku: item.SKU, 
+          onHand: item.OnHand, 
+          onOrder: item['On Order'] 
+        })));
+        
+        // Store checksum in localStorage to persist between sessions
+        const previousChecksum = localStorage.getItem('inventoryDataChecksum');
+        
+        // Current time for this update
+        const currentTime = new Date();
+        
+        // If this is the first load or the data has actually changed
+        if (!previousChecksum || previousChecksum !== dataChecksum) {
+          // Save new checksum
+          localStorage.setItem('inventoryDataChecksum', dataChecksum);
+          
+          // Add to update history
+          const newHistoryEntry = {
+            timestamp: currentTime,
+            productCount: data.length,
+            totalStock: data.reduce((sum, item) => sum + item.OnHand, 0)
+          };
+          
+          // Keep the 10 most recent updates
+          const storedHistory = JSON.parse(localStorage.getItem('updateHistory') || '[]');
+          const updatedHistory = [newHistoryEntry, ...storedHistory].slice(0, 10);
+          
+          // Save to localStorage and state
+          localStorage.setItem('updateHistory', JSON.stringify(updatedHistory));
+          setUpdateHistory(updatedHistory);
+          
+          // Mark as updated
+          setLastUpdated(currentTime);
+        } else if (!lastUpdated) {
+          // If no lastUpdated time but data hasn't changed, still set the time
+          setLastUpdated(currentTime);
+          
+          // Load history from localStorage
+          const storedHistory = JSON.parse(localStorage.getItem('updateHistory') || '[]');
+          setUpdateHistory(storedHistory);
+        }
         setAllProducts(data);
 
         const categoryOrder = [
@@ -91,12 +142,73 @@ const InventoryDashboard = () => {
     };
 
     fetchData();
-    const interval = setInterval(fetchData, 300000);
+    const interval = setInterval(fetchData, 300000); // Check every 5 minutes
     return () => clearInterval(interval);
   }, []);
 
+  // Format date for display
+  const formatDate = (date) => {
+    if (!date) return 'Unknown';
+    
+    const options = { 
+      year: 'numeric', 
+      month: 'short', 
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    };
+    
+    return date.toLocaleString(undefined, options);
+  };
+
+  const UpdateTracker = () => (
+    <div className="bg-gray-800 border border-gray-700 rounded-xl p-6 mb-6">
+      <h3 className="text-lg font-semibold text-white mb-4">Update History</h3>
+      
+      <div className="flex items-center mb-6">
+        <div className="flex-shrink-0 h-12 w-12 bg-blue-900/50 rounded-full flex items-center justify-center border border-blue-700">
+          <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-blue-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+        </div>
+        <div className="ml-4">
+          <p className="text-sm text-gray-400">Last Updated</p>
+          <p className="text-xl font-medium text-white">{formatDate(lastUpdated)}</p>
+        </div>
+      </div>
+      
+      {updateHistory.length > 1 && (
+        <div>
+          <h4 className="text-md font-medium text-gray-300 mb-2">Recent Updates</h4>
+          <div className="space-y-3 max-h-64 overflow-y-auto">
+            {updateHistory.slice(1).map((update, index) => (
+              <div key={index} className="bg-gray-700/30 rounded-lg p-3 border border-gray-700 flex justify-between">
+                <div>
+                  <p className="text-sm text-gray-300">{formatDate(update.timestamp)}</p>
+                </div>
+                <div className="flex space-x-4">
+                  <div className="text-sm">
+                    <span className="text-gray-400">Products: </span>
+                    <span className="text-white">{update.productCount}</span>
+                  </div>
+                  <div className="text-sm">
+                    <span className="text-gray-400">Stock: </span>
+                    <span className="text-white">{update.totalStock}</span>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+
   const Overview = () => (
     <div className="grid gap-6">
+      {/* Update Tracker Component */}
+      <UpdateTracker />
+      
       {overview.lowStock > 0 && (
         <div className="bg-red-900/50 border border-red-700 p-4 rounded-lg">
           <p className="text-red-300">
@@ -234,7 +346,15 @@ const InventoryDashboard = () => {
       <div className="max-w-7xl mx-auto p-6">
         <div className="sticky top-0 z-50 bg-gray-900/90 backdrop-blur-md p-4 -mx-6 -mt-6 mb-6 border-b border-gray-800">
           <div className="max-w-7xl mx-auto">
-            <h1 className="text-3xl font-bold text-white mb-6">Aerovex Live Inventory</h1>
+            <div className="flex items-center justify-between mb-6">
+              <h1 className="text-3xl font-bold text-white">Aerovex Live Inventory</h1>
+              <div className="text-gray-400 text-sm flex items-center">
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                Last updated: {formatDate(lastUpdated)}
+              </div>
+            </div>
             
             <div className="flex mb-4">
               <div className="relative flex-1">
